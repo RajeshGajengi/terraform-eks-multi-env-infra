@@ -2,6 +2,25 @@
 
 This Terraform project provisions a complete Amazon EKS cluster on AWS using modular infrastructure. It includes a custom VPC, subnets, EKS cluster, and managed node groups. The project is environment-aware (e.g., dev, prod).
 
+## 📌 Overview
+
+This project automates the provisioning of a fully functional **Kubernetes cluster on AWS Elastic Kubernetes Service (EKS)** using **Terraform** with a **modular and reusable architecture**. It supports isolated **development**, **staging**, and **production** environments through parameterized configurations.
+
+
+
+## 🧱 Features
+
+- ✅ Modular Terraform codebase (VPC, Subnets, EKS Cluster, Node Groups)
+- ✅ Multi-environment support (`dev`, `staging`, `prod`)
+- ✅ Automated provisioning of:
+  - Custom VPC with public/private subnets
+  - Internet Gateway & NAT Gateway
+  - EKS cluster with managed node groups
+- ✅ IAM roles and policies for EKS and EC2
+- ✅ Remote state configuration ready (e.g., S3 + DynamoDB)
+- ✅ Easily extendable for CI/CD and monitoring
+
+
 
 ## 📁 Project Structure
 
@@ -32,100 +51,126 @@ terraform-eks/
 
 ```
 
+
+## 🚀 Tech Stack
+- Terraform (IaC)
+- AWS EKS (Managed Kubernetes)
+- AWS VPC, EC2, IAM, Subnet, NAT, IGW
+- Kubernetes
+- S3 & DynamoDB for remote state
+
 ## 🚀 Getting Started
 
-### 1. Prerequisites
-
-- Terraform >= 1.3
-- AWS CLI configured with appropriate IAM permissions
-- An S3 bucket and DynamoDB table for remote state
-
-### 2. Initialize Terraform
+### 1. Clone the Repository
 
 ```bash
-cd environments/dev
+git clone https://github.com/yourusername/terraform-eks-multi-env-infra.git
+cd terraform-eks-multi-env-infra/environments/dev
+```
+
+### 2. Configure Variables
+Edit the terraform.tfvars file inside your environment (dev, staging, prod) to set your:
+- AWS region
+- VPC CIDR block
+- Subnet configurations
+- Cluster and node settings
+
+### 3. Initialize Terraform
+```bash 
 terraform init
 ```
 
-### 3. Plan and Apply
-```bash 
-terraform plan -var-file="terraform.tfvars" 
-terraform apply -var-file="terraform.tfvars"
+### 4. Plan Infrastructure
+```bash
+terraform plan
 ```
 
-## ⚙️ Modules
-
-### vpc
-#### Creates:
-- Custom VPC
-- Public subnets
-- Route tables
-#### Inputs:
-- vpc_cidr
-- public_subnet_cidrs
-- azs
-
-#### Outputs:
-- vpc_id
-- public_subnet_ids
-- eks
-
-#### Creates:
-- EKS Cluster
-- Managed Node Group
-
-#### Inputs:
-- cluster_name
-- vpc_id
-- subnet_ids
-- instance_types
-#### Outputs:
-- cluster_name
-
-## 🌍 Environments
-
-Each environment (e.g., dev, prod) has:
-- Its own backend config (backend.tf)
-- Its own variable values (terraform.tfvars)
-
-To deploy:
+### 5. Apply Changes
 ```bash
-cd environments/dev
-terraform apply -var-file="terraform.tfvars"
+terraform apply
 ```
 
 ## 🔐 Remote State
+To enable remote state management and team collaboration, configure the backend.tf file in each environment with:
 
-We use an S3 bucket and DynamoDB table for:
-
-- Storing Terraform state
-- Locking to prevent concurrent changes
-
-Configure your backend in `backend.tf`.
-
-
-## 🧑‍💻 IAM Requirements
-
-Ensure your AWS user has permissions for:
-- EKS
-- VPC
-- IAM (if creating roles)
-- EC2 (for workers and networking)
-
-## 📌 Useful Commands
-```bash
-terraform fmt          # Format code
-terraform validate     # Validate configuration
-terraform plan         # Preview changes
-terraform apply        # Apply changes
-terraform destroy      # Tear down resources
+```hcl
+terraform {
+  backend "s3" {
+    bucket         = "your-terraform-state-bucket"
+    key            = "eks/dev/terraform.tfstate"
+    region         = "us-east-1"
+    dynamodb_table = "terraform-lock-table"
+  }
+}
 ```
 
-## 🐛 Troubleshooting
+## 📤 Outputs
+After terraform apply, outputs will include:
+- VPC ID
+- Subnet IDs
+- Internet/NAT Gateway IDs
+- EKS Cluster Name
+- Node Group Name
 
-- Access Denied: Check IAM role permissions.
-- Timeouts: Ensure your NAT Gateway and route tables are configured properly.
-- kubectl not working: Run:
-```bash
-aws eks update-kubeconfig --region us-east-1 --name dev-eks
+
+## 🛠 Modules Overview
+### VPC Module
+- Creates VPC
+- Tags with environment info
+
+### Subnets Module
+- Public and private subnets
+- Internet gateway & NAT gateway
+- Route tables and associations
+
+### EKS Cluster Module
+- EKS control plane
+- IAM role with EKS permissions
+
+### EKS Nodes Module
+- Managed node group
+- Auto-scaling configuration
+- IAM role for worker nodes
+
+## 🧪 Example Terraform Variable (dev/terraform.tfvars)
+```hcl
+env = "dev"
+region = "us-east-1"
+vpc_cidr_block = "123.10.0.0/16"
+
+public_subnets = {
+  public1 = { cidr = "123.10.1.0/24", az = "us-east-1a" }
+  public2 = { cidr = "123.10.2.0/24", az = "us-east-1b" }
+}
+
+private_subnets = {
+  priv1 = { cidr = "123.10.3.0/24", az = "us-east-1a" }
+  priv2 = { cidr = "123.10.4.0/24", az = "us-east-1b" }
+}
+
+cluster_name     = "myclust"
+node_group_name  = "mynode"
+desired_size     = 1
+min_size         = 1
+max_size         = 1
+
 ```
+## 📸 Screenshots 
+
+
+## Lessons Learned
+- Importance of module reusability and input validation
+- Managing infrastructure across multiple isolated environments
+- Working with AWS IAM roles for secure cluster and node access
+- Networking setup (NAT, IGW, public/private routing)
+
+## 📌 Future Improvements
+- Integrate with CI/CD (e.g., GitHub Actions or Jenkins)
+- Add monitoring using Prometheus + Grafana or CloudWatch
+- Configure ALB Ingress Controller and ExternalDNS
+- Add Helm/ArgoCD deployment pipeline
+- Write unit tests with terraform-compliance or terratest
+
+
+🙋‍♂️ Author
+Rajesh Gajengi
