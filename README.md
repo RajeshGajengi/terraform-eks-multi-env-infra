@@ -1,7 +1,7 @@
 # Terraform AWS EKS Multi-Environment Infrastructure
 > Designed and implemented modular Terraform infrastructure for AWS EKS Kubernetes clusters across multiple environments (dev, staging, prod).
 
-## 📌 Overview
+## Overview
 This project provisions a complete **Amazon EKS (Elastic Kubernetes Service)** infrastructure on **AWS** using **modular Terraform code**. It includes a custom **VPC**, public/private subnets, **EKS cluster**, and **managed node groups**. Each environment (e.g., dev, staging, prod) is isolated with its own configuration and backend.
 
 
@@ -21,10 +21,23 @@ This project provisions a complete **Amazon EKS (Elastic Kubernetes Service)** i
 ```
 terraform-eks/
 ├── modules/
-│   ├── eks-cluster
 │   ├── vpc
+|   |   ├── main.tf
+|   |   ├── variables.tf
+|   |   └── outputs.tf
 │   ├── subnets
-│   └── node-group
+|   |   ├── main.tf
+|   |   ├── variables.tf
+|   |   └── outputs.tf
+│   ├── eks-cluster
+|   |   ├── main.tf
+|   |   ├── variables.tf
+|   |   └── outputs.tf
+│   └── eks-nodes
+|       ├── main.tf
+|       ├── variables.tf
+|       └── outputs.tf
+|      
 ├── environments/
 │   ├── dev/
 |   |   ├── backend.tf
@@ -40,7 +53,8 @@ terraform-eks/
 |   |   ├── backend.tf
 |   |   ├── main.tf
 |   |   ├── variables.tf
-|   └── outputs.tf
+|   |   └── outputs.tf
+|
 └── Readme.md
 ```
 
